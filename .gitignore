@@ -1,7 +1,46 @@
+# Secrets — never commit. .env.example is the tracked template.
 .env
+.env.*
+!.env.example
+
+# Captured traffic and run artifacts. Nothing under data/ is ever committed:
+# it is real traffic by definition. Synthetic test data lives in fixtures/.
+data/
+
+# Terraform state contains resource identifiers and sometimes secrets.
+infra/**/.terraform/
+infra/**/*.tfstate
+infra/**/*.tfstate.*
+infra/**/*.tfvars
+!infra/**/*.tfvars.example
+
+# Python
 __pycache__/
+*.py[cod]
 .venv/
-*.pyc
-data/captures/
+venv/
+build/
+dist/
+*.egg-info/
+
+# uv manages the environment; uv.lock IS committed and must never be ignored.
+.uv/
+
+# Tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
 .coverage
-.vscode
+.coverage.*
+htmlcov/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+
+# MD files
+PHASE_PROMPTS.md
