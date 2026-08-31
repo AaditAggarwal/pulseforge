@@ -1,0 +1,42 @@
+# Runs on every `git commit`. Deliberately the same checks CI will run (Task 3),
+# so CI never tells you something your machine didn't already tell you.
+# Install once: uv run pre-commit install
+minimum_pre_commit_version: "3.8.0"
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=512]     # a big file in this repo means captured traffic
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: [--branch, main]  # main is protected; work happens on phase-XX/*
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.5
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+
+  # mypy runs as a local hook, not a mirrored one, so it type-checks against
+  # the real locked environment rather than an isolated venv with no deps.
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy --strict (app/)
+        entry: uv run mypy --strict
+        language: system
+        types: [python]
+        files: ^app/
+        pass_filenames: false
