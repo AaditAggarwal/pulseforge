@@ -11,9 +11,12 @@ requires-python = ">=3.12,<3.13"   # ADR-006. Upper bound is deliberate.
 license = { file = "LICENSE" }
 authors = [{ name = "Aadit Aggarwal", email = "aadit.asr@gmail.com" }]
 
-# Runtime dependencies. Empty on purpose: nothing is built yet, and adding
-# FastAPI now would be speculation. Each phase adds what it actually needs.
-dependencies = []
+# Runtime dependencies. Each phase adds what it actually needs.
+# Phase 01: FastAPI is the target service under test (ADR-001); uvicorn runs it.
+dependencies = [
+    "fastapi>=0.141.1",
+    "uvicorn[standard]>=0.52.4",
+]
 
 # ---------------------------------------------------------------------------
 # Development dependencies (PEP 735). Not shipped to users of the package.
@@ -29,6 +32,7 @@ dev = [
     "hypothesis>=6.100",
     "pre-commit>=3.8",
     "pip-audit>=2.7",
+    "httpx>=0.28.1",
 ]
 
 # ---------------------------------------------------------------------------
