@@ -11,9 +11,16 @@ requires-python = ">=3.12,<3.13"   # ADR-006. Upper bound is deliberate.
 license = { file = "LICENSE" }
 authors = [{ name = "Aadit Aggarwal", email = "aadit.asr@gmail.com" }]
 
-# Runtime dependencies. Empty on purpose: nothing is built yet, and adding
-# FastAPI now would be speculation. Each phase adds what it actually needs.
-dependencies = []
+# Runtime dependencies. Phase 01 adds the target service's needs and nothing
+# else. `uvicorn[standard]` pulls uvloop, which is the event loop every later
+# benchmark must be measured on (ADR-005). `aiosqlite` rather than a dict so the
+# N+1 switch costs real I/O time -- an in-memory dict would make the injected
+# fault nearly free and the fixture would stop being ground truth.
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "aiosqlite>=0.20",
+]
 
 # ---------------------------------------------------------------------------
 # Development dependencies (PEP 735). Not shipped to users of the package.
@@ -29,6 +36,7 @@ dev = [
     "hypothesis>=6.100",
     "pre-commit>=3.8",
     "pip-audit>=2.7",
+    "httpx2>=2.12",   # starlette.testclient's HTTP client; tests only
 ]
 
 # ---------------------------------------------------------------------------
@@ -74,6 +82,11 @@ select = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "ARG"]   # assert is the point of a test
+# One-off measurement scripts. Not application code, not imported by anything.
+# Their whole output is a human-readable table, so the ban on print() -- which
+# exists to force structured logging in a service -- does not apply, and they
+# launch the service under test with a known argv.
+"scripts/**" = ["T201", "S603", "S607"]
 
 [tool.ruff.format]
 docstring-code-format = true

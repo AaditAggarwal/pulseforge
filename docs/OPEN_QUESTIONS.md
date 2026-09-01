@@ -33,3 +33,18 @@ Budget is roughly $4. Planner calls must be cheap enough to run per-PR.
 ## Q6 — AWS credit balance and expiry
 Account created ~2026-08-28, upgraded to Paid Plan. Actual credit balance and expiry NOT YET VERIFIED.
 **Resolve by:** before any Phase 11 work. Check Billing console, paste the numbers.
+
+## Q7 — Per-request determinism of injected faults
+`TARGET_FAULT_SEED` seeds the target service's fault RNG, which makes the *sequence* of draws
+reproducible. Under serial traffic that means identical fault placement; under concurrency it does
+not, because which in-flight request receives which draw depends on scheduling. The configured rate
+still holds — only the placement moves.
+This matters when the gate compares baseline and candidate runs that both had `ERROR_RATE` on: the
+two runs would see the same error *rate* but different requests failing, adding variance the
+comparison must absorb.
+Options: accept rate-level determinism and let Phase 05's noise floor absorb it; derive the draw from
+a stable per-request identifier the replay engine sends (deterministic placement, but couples the
+fixture to a replay header); or only ever inject probabilistic faults on the candidate side.
+**Lean:** unknown. It depends on whether the replay engine ends up sending a stable request ID at all,
+which is not decided.
+**Resolve by:** Phase 04.

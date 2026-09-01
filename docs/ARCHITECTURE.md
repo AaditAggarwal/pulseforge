@@ -1,7 +1,8 @@
 # ARCHITECTURE
 
 > Components, data flow, interfaces, and why the boundaries sit where they do.
-> Status of every component below: **designed, not built.** Phase 00 is scaffolding only.
+> Status: `app/core` and `app/target` are **built** (Phases 00-01). Every other component below is
+> **designed, not built.**
 
 ## Data flow (V0, phases 00-06)
 

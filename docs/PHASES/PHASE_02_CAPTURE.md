@@ -1,6 +1,6 @@
 # Phase 02 — CAPTURE
 
-> **Status: not started.** Stub. Fill in scope and design only when this phase begins.
+> **Status: not started.** Scope and files set 2026-08-31 at the close of Phase 01.
 
 ## Goal
 
@@ -8,16 +8,46 @@ Record live traffic through ASGI middleware and sanitize it deny-by-default befo
 
 ## Why this exists
 
-To be written when the phase begins.
+PulseForge cannot replay traffic it has not recorded. This phase produces the corpus every later
+phase consumes, and it is the phase where the security boundary lives: sanitization happens inside
+the write path, so raw traffic never reaches a filesystem. A capture bug that writes a secret is not
+a bug to be fixed later — the raw write is the incident.
 
 ## Relevant decisions
 
-To be listed when the phase begins. Read only the ADRs named here.
+- ADR-001 — capture is in-process ASGI middleware; route templates and handler identity come free,
+  sanitization happens before the first byte is written
+- ADR-002 — content-addressed files plus JSONL manifests behind an `app/storage` seam
+- Q2 in `OPEN_QUESTIONS.md` — inline request bodies versus content-addressing them separately.
+  Resolve it in this phase.
 
 ## Files in scope
 
-To be listed when the phase begins. If a session needs a file not listed here,
-ask before reading it, then add it to this list.
+Existing, to read:
+- `app/core/errors.py` — `CaptureError`, `SanitizationError`, `StorageError` already exist
+- `app/core/logging.py` — correlation IDs, already threaded through contextvars
+- `app/target/app.py` — the service the middleware will be mounted on
+- `docs/SECURITY.md` and `docs/DATA_POLICY.md` — the sanitization contract this phase implements
+
+New, to write:
+- `app/capture/middleware.py` — the ASGI middleware
+- `app/capture/sanitize.py` — deny-by-default redaction, fail-closed
+- `app/capture/corpus.py` — the `CapturedRequest` model and JSONL writing
+- `app/storage/` — content addressing and the filesystem seam
+- `tests/unit/test_sanitize.py`, `tests/property/test_sanitize_properties.py`
+- `tests/integration/test_capture_against_target.py`
+
+## Notes carried in from Phase 01
+
+- The target service reads its settings once at startup and serves exactly one configuration, so a
+  corpus can be attributed to a known fault configuration without ambiguity.
+- Seed data is deterministic given `rng_seed`, so a corpus recorded against one seeded database stays
+  valid against another built the same way.
+- `POST /orders` writes, which means a captured corpus contains writes. That is Q4's problem, not this
+  phase's, but capture must record enough for Phase 04 to have the option of replaying them.
+- Capture overhead must be measured against `BENCHMARKS.md` B-01, which is the uninstrumented
+  baseline for exactly this comparison. ADR-001 requires capture to be disableable and its overhead
+  known.
 
 ## Exit criteria
 
