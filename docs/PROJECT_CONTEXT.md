@@ -21,25 +21,33 @@ blind (new endpoints with no traffic history, config/dependency changes, semanti
 
 | | |
 |---|---|
-| Current phase | **00 — Foundation** |
-| Phases complete | none |
-| Lines of application code | 0 (only `app/__init__.py`) |
-| Tests | 0 |
-| Measured numbers | none. See `BENCHMARKS.md`. |
-| Last updated | 2026-08-30 |
+| Current phase | **02 — Capture** (not started) |
+| Phases complete | 00, 01 |
+| Lines of application code | 1022 in `app/`, of which ~700 are the Phase 01 target service |
+| Tests | 113 passing; 99% branch coverage on `app/target` |
+| Measured numbers | Phase 01 target service only. See `BENCHMARKS.md` B-01 to B-03. |
+| Last updated | 2026-08-31 |
 
-**Nothing in the "What PulseForge is" section above is implemented yet.** Treat every capability as
-unbuilt until this file's "What works" table says otherwise.
+**Nothing in the "What PulseForge is" section above is implemented yet.** The target service is the
+subject PulseForge will be pointed at, not PulseForge itself. Treat every capability as unbuilt until
+this file's "What works" table says otherwise.
 
 ## What works
 
 | Component | Status | Evidence |
 |---|---|---|
-| — | — | Nothing implemented. Phase 00 is scaffolding only. |
+| `app/core` — errors, JSON logging, correlation IDs | Built | `tests/unit/test_logging.py` |
+| `app/target` — 5-endpoint FastAPI service, SQLite-backed | Built | `BENCHMARKS.md` B-01 |
+| `app/target` — 4 runtime regression switches | Built | `BENCHMARKS.md` B-02; `tests/integration/test_target_faults.py` |
+
+The switches are the ground truth for everything downstream: `SLOW_PRICING_MS` degrades two routes
+through a shared module, `N_PLUS_ONE` degrades one route by 4.4x while returning byte-identical
+responses, and `ERROR_RATE`/`TIMEOUT_RATE` deliver the configured rates within sampling error.
 
 ## What does not work
 
-Everything. See the phase list below for the intended order of construction.
+Capture, coverage mapping, replay, comparison, the gate, the planner — every part of PulseForge
+itself. Only the thing it will be tested against exists. See the phase list below.
 
 ## Stack
 
@@ -95,7 +103,7 @@ Reordering requires an ADR.
 ## V0 — the thinnest sellable slice
 
 Phases 00-06. One command against the Phase 01 target service produces a signed PASS/BLOCK verdict
-on disk with a nonzero exit code on BLOCK, proven by flipping `SLOW_PRICING=1`.
+on disk with a nonzero exit code on BLOCK, proven by flipping `SLOW_PRICING_MS`.
 
 Deliberately excluded from V0: AI planner, coverage map, queue/workers, AWS, observability stack,
 PR comment rendering. Each is leverage on the gate, and meaningless before the gate is trustworthy.
@@ -105,4 +113,5 @@ PR comment rendering. Each is leverage on the gate, and meaningless before the g
 - Component boundaries and data flow: `ARCHITECTURE.md`
 - Why anything is the way it is: `DECISIONS.md`
 - What is still undecided: `OPEN_QUESTIONS.md`
-- What this phase requires: `PHASES/PHASE_00_FOUNDATION.md`
+- What this phase requires: `PHASES/PHASE_02_CAPTURE.md`
+- What was built last, and why it is shaped that way: `PHASES/PHASE_01_TARGET_SERVICE.md`
