@@ -16,7 +16,15 @@ To be listed when the phase begins. Read only the ADRs named here.
 
 ## Files in scope
 
-To be listed when the phase begins. If a session needs a file not listed here,
+Anticipated (to be confirmed when the phase begins):
+
+- `app/capture/__init__.py`, `app/capture/middleware.py` — the ASGI capture middleware
+- `app/capture/sanitize.py` — deny-by-default header allowlist + body redaction (SECURITY.md)
+- `app/storage/__init__.py`, `app/storage/corpus.py` — content-addressed corpus writing (ADR-002)
+- `tests/unit/test_sanitize.py` — property-based (`hypothesis`) tests on the sanitizer
+- `tests/integration/test_capture.py` — capture running against the Phase 01 target service
+
+Runs against the Phase 01 target service (`app/target`). If a session needs a file not listed here,
 ask before reading it, then add it to this list.
 
 ## Exit criteria
